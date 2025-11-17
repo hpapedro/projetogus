@@ -116,16 +116,31 @@ fun AddReceitaScreen(
                 .padding(16.dp)
         ) {
             // --- Card 1: Campos de Texto ---
+// --- Card 1: Campos de Texto ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    // 1. Corrigido: 'valor' para 'value' e removido o campo de nome que estava desabilitado
+                    // CAMPO DO NOME DA RECEITA (ADICIONAR ESTE TRECHO)
                     CaixaDeTexto(
-                        modifier = Modifier.fillMaxWidth().height(120.dp),
-                        value = descricaoReceita, // Correção aqui
+                        modifier = Modifier.fillMaxWidth(),
+                        value = nomeReceita,
+                        onValueChange = { nomeReceita = it },
+                        label = "Nome da Receita",
+                        maxLines = 1,
+                        keyboardType = KeyboardType.Text
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // --- Campos existentes ---
+                    CaixaDeTexto(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        value = descricaoReceita,
                         onValueChange = { descricaoReceita = it },
                         label = "Modo de Preparo",
                         maxLines = 5,
@@ -134,10 +149,11 @@ fun AddReceitaScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // 2. Corrigido: 'valor' para 'value'. Também notei que este campo estava duplicado e o corrigi.
                     CaixaDeTexto(
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
-                        value = ingredientesTexto, // Correção aqui
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        value = ingredientesTexto,
                         onValueChange = { ingredientesTexto = it },
                         label = "Ingredientes (separados por vírgula)",
                         maxLines = 3,
@@ -145,6 +161,7 @@ fun AddReceitaScreen(
                     )
                 }
             }
+
 
             Spacer(modifier = Modifier.height(20.dp))
 
