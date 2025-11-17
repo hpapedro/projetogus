@@ -26,14 +26,16 @@ class DataSource {
         descricao: String,
         tempoPreparo: Int,
         ingredientes: List<String>,
-        nivelDificuldade: String
+        nivelDificuldade: String,
+        tipoClasse: String
     ) {
         val receitaMap = hashMapOf(
             "nome" to nome,
             "descricao" to descricao,
             "tempoPreparo" to tempoPreparo,
             "ingredientes" to ingredientes,
-            "nivelDificuldade" to nivelDificuldade
+            "nivelDificuldade" to nivelDificuldade,
+            "tipoClasse" to tipoClasse
         )
 
         // Usa await() para esperar a operação ser concluída de forma assíncrona
