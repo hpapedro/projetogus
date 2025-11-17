@@ -1,4 +1,4 @@
-package com.example.catalogoreceitas.View // Seu pacote View
+package com.example.catalogoreceitas.View
 
 import android.annotation.SuppressLint
 import android.widget.Toast
@@ -22,9 +22,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.catalogoreceitas.Repository.ReceitasRepository // Seu repositório
-import com.example.catalogoreceitas.components.CaixaDeTexto // Seu componente
-import com.example.catalogoreceitas.ui.theme.Purple40 // Cores do tema
+import com.example.catalogoreceitas.Repository.ReceitasRepository
+import com.example.catalogoreceitas.components.CaixaDeTexto
+import com.example.catalogoreceitas.ui.theme.Purple40
 import com.example.catalogoreceitas.ui.theme.RB_Green
 import com.example.catalogoreceitas.ui.theme.RB_Red
 import com.example.catalogoreceitas.ui.theme.RB_Yellow
@@ -40,38 +40,28 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun AddReceitaScreen(
     navController: NavController,
-    nomeDaReceitaParaEditar: String? // 1. Recebe o nome da receita (pode ser nulo)
+    nomeDaReceitaParaEditar: String?
 ) {
     val scope = rememberCoroutineScope()
     val receitasRepository = remember { ReceitasRepository() }
     val context = LocalContext.current
-
-    // 2. Determina se a tela está em modo de edição
     val isEditing = nomeDaReceitaParaEditar != null
-
-    // Estados dos campos do formulário
     var nomeReceita by remember { mutableStateOf("") }
     var descricaoReceita by remember { mutableStateOf("") }
     var ingredientesTexto by remember { mutableStateOf("") }
     var tempoPreparoOpcao by remember { mutableStateOf("curto") }
     var tipoReceita by remember { mutableStateOf("Simples") }
 
-    // 3. Efeito que carrega os dados da receita se estiver em modo de edição
+
     LaunchedEffect(key1 = Unit) {
         if (isEditing && nomeDaReceitaParaEditar != null) {
             val decodedNome = URLDecoder.decode(nomeDaReceitaParaEditar, StandardCharsets.UTF_8.toString())
-
-            // Busca a receita uma única vez para preencher o formulário
             val receitaEncontrada = receitasRepository.buscarReceitaPorNome(decodedNome).firstOrNull()
-
             if (receitaEncontrada != null) {
-                // Preenche os estados com os dados da receita encontrada
                 nomeReceita = receitaEncontrada.nome
                 descricaoReceita = receitaEncontrada.descricao
                 ingredientesTexto = receitaEncontrada.ingredientes.joinToString(", ")
                 tipoReceita = receitaEncontrada.tipoClasse
-
-                // Converte o tempo em minutos de volta para a opção do RadioButton
                 tempoPreparoOpcao = when {
                     receitaEncontrada.tempoPreparo <= 20 -> "curto"
                     receitaEncontrada.tempoPreparo <= 60 -> "medio"
@@ -84,7 +74,6 @@ fun AddReceitaScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                // 4. Título dinâmico
                 title = {
                     Text(
                         text = if (isEditing) "Editar Receita" else "Adicionar Nova Receita",
@@ -115,15 +104,12 @@ fun AddReceitaScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            // --- Card 1: Campos de Texto ---
-// --- Card 1: Campos de Texto ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    // CAMPO DO NOME DA RECEITA (ADICIONAR ESTE TRECHO)
                     CaixaDeTexto(
                         modifier = Modifier.fillMaxWidth(),
                         value = nomeReceita,
@@ -134,8 +120,6 @@ fun AddReceitaScreen(
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    // --- Campos existentes ---
                     CaixaDeTexto(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -164,8 +148,6 @@ fun AddReceitaScreen(
 
 
             Spacer(modifier = Modifier.height(20.dp))
-
-            // --- Card 2: Opções de Seleção (código permanece o mesmo) ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
@@ -196,8 +178,6 @@ fun AddReceitaScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
-
-            // BOTÃO DE SALVAR
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -209,7 +189,6 @@ fun AddReceitaScreen(
                     if (nomeReceita.isBlank()) {
                         Toast.makeText(context, "O Nome da Receita é obrigatório!", Toast.LENGTH_SHORT).show()
                     } else {
-                        // A lógica de processamento dos dados é a mesma
                         val tempoEmMinutos = when (tempoPreparoOpcao) {
                             "curto" -> 20
                             "medio" -> 40
@@ -218,8 +197,6 @@ fun AddReceitaScreen(
                         }
                         val nivelDificuldadeString = tempoPreparoOpcao.replaceFirstChar { it.uppercase() }
                         val listaIngredientes = ingredientesTexto.split(',').map { it.trim() }.filter { it.isNotEmpty() }
-
-                        // A função salvarReceita sobrescreve o documento se o nome/ID já existir
                         scope.launch(Dispatchers.IO) {
                             receitasRepository.salvarReceita(
                                 nome = nomeReceita,
@@ -232,7 +209,6 @@ fun AddReceitaScreen(
                         }
 
                         scope.launch(Dispatchers.Main) {
-                            // Mensagem de sucesso dinâmica
                             val feedbackMessage = if (isEditing) "Receita atualizada com sucesso!" else "Receita salva com sucesso!"
                             Toast.makeText(context, feedbackMessage, Toast.LENGTH_SHORT).show()
                             navController.popBackStack() // Volta para a tela anterior
@@ -240,7 +216,6 @@ fun AddReceitaScreen(
                     }
                 }
             ) {
-                // 6. Texto do botão dinâmico
                 Text(
                     text = if (isEditing) "Salvar Alterações" else "Salvar Receita",
                     fontSize = 16.sp,
@@ -250,8 +225,6 @@ fun AddReceitaScreen(
         }
     }
 }
-
-// Componente auxiliar não precisa de alterações
 @Composable
 fun TempoRadioButton(label: String, selected: Boolean, onClick: () -> Unit, color: Color) {
     Row(

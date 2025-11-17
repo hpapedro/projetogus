@@ -13,27 +13,17 @@ class ReceitasRepository() {
         tempoPreparo: Int,
         ingredientes: List<String>,
         nivelDificuldade: String,
-        tipoClasse: String // << 1. ADICIONE O PARÂMETRO AQUI
+        tipoClasse: String //
     ) {
-        // 2. PASSE O PARÂMETRO ADIANTE PARA O DATASOURCE
         dataSource.salvarReceita(nome, descricao, tempoPreparo, ingredientes, nivelDificuldade, tipoClasse)
     }
 
     fun listarReceitas(): Flow<List<Receita>> {
         return dataSource.listarReceitas()
     }
-
-    /**
-     * ---- FUNÇÃO ADICIONADA AQUI ----
-     * Esta é a função que estava faltando.
-     * Ela chama a função correspondente no DataSource para buscar uma receita pelo nome.
-     */
     fun buscarReceitaPorNome(nome: String): Flow<Receita?> {
         return dataSource.buscarReceitaPorNome(nome)
     }
-    // ... (dentro da classe ReceitasRepository)
-
-    // Função para excluir uma receita pelo nome
     fun excluirReceita(nomeReceita: String) {
         dataSource.excluirReceita(nomeReceita)
     }

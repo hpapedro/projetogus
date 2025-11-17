@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets
 fun ListaReceitasScreen(
     navController: NavController
 ) {
-    // Inicializa o repositório uma única vez usando remember
     val receitasRepository = remember { ReceitasRepository() }
 
     Scaffold(
@@ -63,21 +62,18 @@ fun ListaReceitasScreen(
         }
     ) { paddingValues ->
 
-        // Coleta o Flow de receitas do repositório de forma reativa
         val listaReceitas = receitasRepository.listarReceitas().collectAsState(mutableListOf()).value
 
         LazyColumn(
             modifier = Modifier.padding(paddingValues)
         ) {
-            items(listaReceitas, key = { it.nome }) { receita -> // Usar uma chave única ajuda o Compose
+            items(listaReceitas, key = { it.nome }) { receita ->
                 ItemReceita(
                     receita = receita,
                     onNavigateToDetails = {
                         val encodedNome = URLEncoder.encode(receita.nome, StandardCharsets.UTF_8.toString())
                         navController.navigate("DescricaoReceita/$encodedNome")
                     },
-                    // --- AÇÃO DE EXCLUSÃO ADICIONADA AQUI ---
-                    // Passa a função que será chamada quando o botão de deletar for clicado
                     onDelete = {
                         receitasRepository.excluirReceita(receita.nome)
                     }

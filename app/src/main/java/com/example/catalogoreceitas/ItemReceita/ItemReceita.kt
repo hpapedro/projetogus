@@ -25,7 +25,7 @@ import com.example.catalogoreceitas.ui.theme.Purple80
 fun ItemReceita(
     receita: Receita,
     onNavigateToDetails: () -> Unit,
-    onDelete: () -> Unit // <-- ADICIONE ESTE PARÂMETRO AQUI
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -36,7 +36,6 @@ fun ItemReceita(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column {
-            // 1. Cabeçalho Colorido com Título e Botão de Excluir
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -47,11 +46,10 @@ fun ItemReceita(
                         )
                     )
             ) {
-                // Conteúdo clicável que leva aos detalhes
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .clickable { onNavigateToDetails() } // Clique na área do título
+                        .clickable { onNavigateToDetails() }
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -61,16 +59,15 @@ fun ItemReceita(
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         maxLines = 2,
-                        modifier = Modifier.weight(1f) // Garante que o texto não empurre o botão
+                        modifier = Modifier.weight(1f)
                     )
                 }
 
-                // Botão de excluir alinhado à direita
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.CenterEnd
                 ) {
-                    IconButton(onClick = onDelete) { // Usa a função onDelete recebida
+                    IconButton(onClick = onDelete) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
                             contentDescription = "Excluir Receita",
@@ -80,7 +77,6 @@ fun ItemReceita(
                 }
             }
 
-            // 2. Corpo do Card (também clicável)
             Column(
                 modifier = Modifier
                     .clickable { onNavigateToDetails() }
@@ -95,7 +91,6 @@ fun ItemReceita(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 3. Informações de Tempo e Tipo
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -115,7 +110,6 @@ fun ItemReceita(
     }
 }
 
-// Composable auxiliar (permanece o mesmo)
 @Composable
 private fun InfoComIcone(icone: androidx.compose.ui.graphics.vector.ImageVector, texto: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {

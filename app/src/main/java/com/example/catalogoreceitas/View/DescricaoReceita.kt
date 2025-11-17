@@ -6,7 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit // <-- 1. IMPORT DO ÍCONE DE EDIÇÃO
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -34,7 +34,6 @@ fun DescricaoReceitaScreen(
     navController: NavController,
     receitaNome: String?
 ) {
-    // A lógica de verificação e busca de receita permanece a mesma
     if (receitaNome == null) {
         Scaffold(
             topBar = {
@@ -42,7 +41,7 @@ fun DescricaoReceitaScreen(
                     titulo = "Receita não encontrada",
                     navController = navController,
                     onDelete = {},
-                    onEdit = {} // Ações vazias pois não há receita
+                    onEdit = {}
                 )
             }
         ) { padding ->
@@ -78,11 +77,9 @@ fun DescricaoReceitaScreen(
                         navController.popBackStack()
                     }
                 },
-                // 2. IMPLEMENTAÇÃO DA NAVEGAÇÃO PARA A TELA DE EDIÇÃO
                 onEdit = {
                     receita?.let { receitaParaEditar ->
                         val encodedNome = URLEncoder.encode(receitaParaEditar.nome, StandardCharsets.UTF_8.toString())
-                        // Navega para a tela de Adicionar/Editar, passando o nome da receita
                         navController.navigate("AddReceita?receitaNome=$encodedNome")
                     }
                 }
@@ -103,7 +100,6 @@ fun DescricaoReceitaScreen(
     }
 }
 
-// O Composable DetalhesDaReceita não precisa de alterações
 @Composable
 private fun DetalhesDaReceita(receita: Receita) {
     Column(
@@ -170,7 +166,6 @@ private fun DetalhesDaReceita(receita: Receita) {
     }
 }
 
-// Os composables SectionTitle e InfoItem não precisam de alterações
 @Composable
 private fun SectionTitle(title: String) {
     Text(
@@ -190,7 +185,6 @@ private fun InfoItem(icon: androidx.compose.ui.graphics.vector.ImageVector, labe
         Text(text = label, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,3 @@
-// File: com/example/catalogoreceitas/Model/ReceitaComplexa.kt
 
 package com.example.catalogoreceitas.Model
 
