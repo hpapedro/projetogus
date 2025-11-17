@@ -12,9 +12,11 @@ class ReceitasRepository() {
         descricao: String,
         tempoPreparo: Int,
         ingredientes: List<String>,
-        nivelDificuldade: String
+        nivelDificuldade: String,
+        tipoClasse: String // << 1. ADICIONE O PARÂMETRO AQUI
     ) {
-        dataSource.salvarReceita(nome, descricao, tempoPreparo, ingredientes, nivelDificuldade)
+        // 2. PASSE O PARÂMETRO ADIANTE PARA O DATASOURCE
+        dataSource.salvarReceita(nome, descricao, tempoPreparo, ingredientes, nivelDificuldade, tipoClasse)
     }
 
     fun listarReceitas(): Flow<List<Receita>> {

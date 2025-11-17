@@ -1,12 +1,12 @@
 package com.example.catalogoreceitas.View
 
-import androidx.compose.foundation.layout.*import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -15,13 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.catalogoreceitas.Model.Receita
 import com.example.catalogoreceitas.Repository.ReceitasRepository
 import com.example.catalogoreceitas.ui.theme.Purple40
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -29,26 +27,21 @@ import java.nio.charset.StandardCharsets
 @Composable
 fun DescricaoReceitaScreen(
     navController: NavController,
-    receitaNome: String? // Marcar como anulável para segurança
+    receitaNome: String? // Marcado como anulável para segurança
 ) {
-    // Se o nome da receita for nulo, não há o que mostrar.
+    // Se o nome da receita for nulo, mostra uma tela de erro.
     if (receitaNome == null) {
-        // Opcional: Mostrar uma mensagem de erro ou simplesmente voltar.
-        // Por enquanto, vamos mostrar um Scaffold vazio com um título de erro.
         Scaffold(topBar = { TopBarPadrao("Receita não encontrada", navController) }) { padding ->
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .padding(padding), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text("Não foi possível carregar a receita.")
             }
         }
         return
     }
 
-    // Inicializa o repositório.
     val repository = remember { ReceitasRepository() }
 
-    // Decodifica o nome da receita de forma segura.
+    // Decodifica o nome da receita que veio da URL.
     val decodedNome = remember(receitaNome) {
         try {
             URLDecoder.decode(receitaNome, StandardCharsets.UTF_8.toString())
@@ -73,7 +66,7 @@ fun DescricaoReceitaScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Se a receita ainda não foi carregada (continua com valor inicial `null`).
+            // Mostra um indicador de progresso enquanto a receita é carregada.
             if (receita == null) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
@@ -86,6 +79,7 @@ fun DescricaoReceitaScreen(
 
 @Composable
 private fun DetalhesDaReceita(receita: Receita) {
+    // Column principal que permite a rolagem da tela.
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -100,17 +94,34 @@ private fun DetalhesDaReceita(receita: Receita) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Informações Rápidas
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        // Exibe o tipo da classe da receita (Ex: "Receita Simples", "Receita Complexa")
+        Text(
+            text = "Tipo: ${receita.tipoClasse}",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.DarkGray
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Informações Rápidas (Tempo e Nível)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             Text(
                 text = "Tempo: ${receita.tempoPreparo} min",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray
+            )
+            // CORRIGIDO: Usa 'nivelDificuldade' para mostrar o nível (Fácil, Médio, etc.)
+            Text(
+                text = "Nível: ${receita.nivelDificuldade}",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.Gray
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Modo de Preparo
+        // Seção de Modo de Preparo
         Text(
             text = "Modo de Preparo",
             style = MaterialTheme.typography.titleLarge,
@@ -123,7 +134,7 @@ private fun DetalhesDaReceita(receita: Receita) {
         )
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Ingredientes
+        // Seção de Ingredientes
         Text(
             text = "Ingredientes",
             style = MaterialTheme.typography.titleLarge,
@@ -134,7 +145,7 @@ private fun DetalhesDaReceita(receita: Receita) {
             Text(
                 text = "• $ingrediente",
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
             )
         }
     }

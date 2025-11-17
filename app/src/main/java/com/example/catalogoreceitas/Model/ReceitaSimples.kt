@@ -5,7 +5,7 @@ data class ReceitaSimples(
     override val descricao: String = "",
     override val tempoPreparo: Int = 0,
     override val ingredientes: List<String> = emptyList(),
-    val nivelDificuldade: String = "Fácil"
+    override val nivelDificuldade: String = "Fácil"
 ) : Receita(nome, descricao, tempoPreparo, ingredientes) {
 
     override fun obterTipoReceita(): String {
