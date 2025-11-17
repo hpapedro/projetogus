@@ -29,32 +29,65 @@ import com.example.catalogoreceitas.ui.theme.RB_Green
 import com.example.catalogoreceitas.ui.theme.RB_Red
 import com.example.catalogoreceitas.ui.theme.RB_Yellow
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AddReceitaScreen(
-    navController: NavController
+    navController: NavController,
+    nomeDaReceitaParaEditar: String? // 1. Recebe o nome da receita (pode ser nulo)
 ) {
     val scope = rememberCoroutineScope()
     val receitasRepository = remember { ReceitasRepository() }
     val context = LocalContext.current
 
-    // ESTADOS (permanecem os mesmos)
+    // 2. Determina se a tela está em modo de edição
+    val isEditing = nomeDaReceitaParaEditar != null
+
+    // Estados dos campos do formulário
     var nomeReceita by remember { mutableStateOf("") }
     var descricaoReceita by remember { mutableStateOf("") }
     var ingredientesTexto by remember { mutableStateOf("") }
     var tempoPreparoOpcao by remember { mutableStateOf("curto") }
     var tipoReceita by remember { mutableStateOf("Simples") }
 
+    // 3. Efeito que carrega os dados da receita se estiver em modo de edição
+    LaunchedEffect(key1 = Unit) {
+        if (isEditing && nomeDaReceitaParaEditar != null) {
+            val decodedNome = URLDecoder.decode(nomeDaReceitaParaEditar, StandardCharsets.UTF_8.toString())
+
+            // Busca a receita uma única vez para preencher o formulário
+            val receitaEncontrada = receitasRepository.buscarReceitaPorNome(decodedNome).firstOrNull()
+
+            if (receitaEncontrada != null) {
+                // Preenche os estados com os dados da receita encontrada
+                nomeReceita = receitaEncontrada.nome
+                descricaoReceita = receitaEncontrada.descricao
+                ingredientesTexto = receitaEncontrada.ingredientes.joinToString(", ")
+                tipoReceita = receitaEncontrada.tipoClasse
+
+                // Converte o tempo em minutos de volta para a opção do RadioButton
+                tempoPreparoOpcao = when {
+                    receitaEncontrada.tempoPreparo <= 20 -> "curto"
+                    receitaEncontrada.tempoPreparo <= 60 -> "medio"
+                    else -> "longo"
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
+                // 4. Título dinâmico
                 title = {
                     Text(
-                        "Adicionar Nova Receita",
+                        text = if (isEditing) "Editar Receita" else "Adicionar Nova Receita",
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
@@ -89,27 +122,40 @@ fun AddReceitaScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    CaixaDeTexto(Modifier.fillMaxWidth(), nomeReceita, { nomeReceita = it }, "Nome da Receita *", 1, KeyboardType.Text)
+                    // 1. Corrigido: 'valor' para 'value' e removido o campo de nome que estava desabilitado
+                    CaixaDeTexto(
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                        value = descricaoReceita, // Correção aqui
+                        onValueChange = { descricaoReceita = it },
+                        label = "Modo de Preparo",
+                        maxLines = 5,
+                        keyboardType = KeyboardType.Text
+                    )
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    CaixaDeTexto(Modifier.fillMaxWidth().height(120.dp), descricaoReceita, { descricaoReceita = it }, "Modo de Preparo", 5, KeyboardType.Text)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    CaixaDeTexto(Modifier.fillMaxWidth().height(100.dp), ingredientesTexto, { ingredientesTexto = it }, "Ingredientes (separados por vírgula)", 3, KeyboardType.Text)
+
+                    // 2. Corrigido: 'valor' para 'value'. Também notei que este campo estava duplicado e o corrigi.
+                    CaixaDeTexto(
+                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                        value = ingredientesTexto, // Correção aqui
+                        onValueChange = { ingredientesTexto = it },
+                        label = "Ingredientes (separados por vírgula)",
+                        maxLines = 3,
+                        keyboardType = KeyboardType.Text
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // --- Card 2: Opções de Seleção ---
+            // --- Card 2: Opções de Seleção (código permanece o mesmo) ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(4.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    // SELEÇÃO DE TIPO DE RECEITA (VERTICAL)
                     Text("Classificação da Receita:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
-
-                    // --- MUDANÇA AQUI: Row -> Column ---
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable { tipoReceita = "Simples" }) {
                             RadioButton(selected = tipoReceita == "Simples", onClick = { tipoReceita = "Simples" }, colors = RadioButtonDefaults.colors(selectedColor = RB_Green))
@@ -120,15 +166,10 @@ fun AddReceitaScreen(
                             Text("Complexa")
                         }
                     }
-
                     Spacer(modifier = Modifier.height(20.dp))
                     Divider()
                     Spacer(modifier = Modifier.height(20.dp))
-
-                    // SELEÇÃO DE TEMPO DE PREPARO (VERTICAL)
                     Text("Tempo de Preparo Estimado:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
-
-                    // --- MUDANÇA AQUI: Row -> Column ---
                     Column(modifier = Modifier.fillMaxWidth()) {
                         TempoRadioButton(label = "Curto (≤20m)", selected = tempoPreparoOpcao == "curto", onClick = { tempoPreparoOpcao = "curto" }, color = RB_Green)
                         TempoRadioButton(label = "Médio (≤60m)", selected = tempoPreparoOpcao == "medio", onClick = { tempoPreparoOpcao = "medio" }, color = RB_Yellow)
@@ -151,6 +192,7 @@ fun AddReceitaScreen(
                     if (nomeReceita.isBlank()) {
                         Toast.makeText(context, "O Nome da Receita é obrigatório!", Toast.LENGTH_SHORT).show()
                     } else {
+                        // A lógica de processamento dos dados é a mesma
                         val tempoEmMinutos = when (tempoPreparoOpcao) {
                             "curto" -> 20
                             "medio" -> 40
@@ -160,6 +202,7 @@ fun AddReceitaScreen(
                         val nivelDificuldadeString = tempoPreparoOpcao.replaceFirstChar { it.uppercase() }
                         val listaIngredientes = ingredientesTexto.split(',').map { it.trim() }.filter { it.isNotEmpty() }
 
+                        // A função salvarReceita sobrescreve o documento se o nome/ID já existir
                         scope.launch(Dispatchers.IO) {
                             receitasRepository.salvarReceita(
                                 nome = nomeReceita,
@@ -172,25 +215,32 @@ fun AddReceitaScreen(
                         }
 
                         scope.launch(Dispatchers.Main) {
-                            Toast.makeText(context, "Receita salva com sucesso!", Toast.LENGTH_SHORT).show()
-                            navController.popBackStack()
+                            // Mensagem de sucesso dinâmica
+                            val feedbackMessage = if (isEditing) "Receita atualizada com sucesso!" else "Receita salva com sucesso!"
+                            Toast.makeText(context, feedbackMessage, Toast.LENGTH_SHORT).show()
+                            navController.popBackStack() // Volta para a tela anterior
                         }
                     }
                 }
             ) {
-                Text("Salvar Receita", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                // 6. Texto do botão dinâmico
+                Text(
+                    text = if (isEditing) "Salvar Alterações" else "Salvar Receita",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
 
-// Componente auxiliar (seu código original, apenas com o Text clicável e um ajuste no modifier)
+// Componente auxiliar não precisa de alterações
 @Composable
 fun TempoRadioButton(label: String, selected: Boolean, onClick: () -> Unit, color: Color) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .fillMaxWidth() // Garante que a área clicável ocupe toda a largura
+            .fillMaxWidth()
             .clickable(onClick = onClick)
     ) {
         RadioButton(

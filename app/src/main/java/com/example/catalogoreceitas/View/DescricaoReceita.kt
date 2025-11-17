@@ -6,6 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit // <-- 1. IMPORT DO ÍCONE DE EDIÇÃO
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -23,6 +24,7 @@ import com.example.catalogoreceitas.Model.Receita
 import com.example.catalogoreceitas.Repository.ReceitasRepository
 import com.example.catalogoreceitas.ui.theme.Purple40
 import kotlinx.coroutines.flow.Flow
+import java.net.URLEncoder
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -32,8 +34,18 @@ fun DescricaoReceitaScreen(
     navController: NavController,
     receitaNome: String?
 ) {
+    // A lógica de verificação e busca de receita permanece a mesma
     if (receitaNome == null) {
-        Scaffold(topBar = { TopBarPadrao("Receita não encontrada", navController) {} }) { padding ->
+        Scaffold(
+            topBar = {
+                TopBarPadrao(
+                    titulo = "Receita não encontrada",
+                    navController = navController,
+                    onDelete = {},
+                    onEdit = {} // Ações vazias pois não há receita
+                )
+            }
+        ) { padding ->
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text("Não foi possível carregar a receita.")
             }
@@ -42,12 +54,11 @@ fun DescricaoReceitaScreen(
     }
 
     val repository = remember { ReceitasRepository() }
-
     val decodedNome = remember(receitaNome) {
         try {
             URLDecoder.decode(receitaNome, StandardCharsets.UTF_8.toString())
         } catch (e: Exception) {
-            receitaNome // Em caso de erro, usa o nome original
+            receitaNome
         }
     }
 
@@ -62,10 +73,17 @@ fun DescricaoReceitaScreen(
                 titulo = receita?.nome ?: "Carregando...",
                 navController = navController,
                 onDelete = {
-                    // Lógica de exclusão que funciona
                     receita?.let { receitaParaExcluir ->
                         repository.excluirReceita(receitaParaExcluir.nome)
                         navController.popBackStack()
+                    }
+                },
+                // 2. IMPLEMENTAÇÃO DA NAVEGAÇÃO PARA A TELA DE EDIÇÃO
+                onEdit = {
+                    receita?.let { receitaParaEditar ->
+                        val encodedNome = URLEncoder.encode(receitaParaEditar.nome, StandardCharsets.UTF_8.toString())
+                        // Navega para a tela de Adicionar/Editar, passando o nome da receita
+                        navController.navigate("AddReceita?receitaNome=$encodedNome")
                     }
                 }
             )
@@ -77,16 +95,15 @@ fun DescricaoReceitaScreen(
                 .padding(paddingValues)
         ) {
             if (receita == null) {
-                // Indicador de carregamento centralizado
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
-                // Exibe os detalhes da receita quando carregada
                 DetalhesDaReceita(receita = receita!!)
             }
         }
     }
 }
 
+// O Composable DetalhesDaReceita não precisa de alterações
 @Composable
 private fun DetalhesDaReceita(receita: Receita) {
     Column(
@@ -95,7 +112,6 @@ private fun DetalhesDaReceita(receita: Receita) {
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
-        // Título da Receita
         Text(
             text = receita.nome,
             style = MaterialTheme.typography.headlineLarge,
@@ -103,10 +119,8 @@ private fun DetalhesDaReceita(receita: Receita) {
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(8.dp))
-
-        // "Tipo" da receita como um Chip para melhor estética
         SuggestionChip(
-            onClick = { /* Ação futura, como filtrar por tipo */ },
+            onClick = { },
             label = {
                 Text(
                     text = receita.tipoClasse,
@@ -117,11 +131,8 @@ private fun DetalhesDaReceita(receita: Receita) {
             colors = SuggestionChipDefaults.suggestionChipColors(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
             ),
-
         )
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Card com informações rápidas (Tempo e Nível)
         Card(
             modifier = Modifier.fillMaxWidth(),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -139,19 +150,15 @@ private fun DetalhesDaReceita(receita: Receita) {
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
-
-        // Seção de Modo de Preparo
         SectionTitle(title = "Modo de Preparo")
         Text(
             text = receita.descricao,
             style = MaterialTheme.typography.bodyLarge,
-            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.5 // Melhora a legibilidade
+            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.5
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Divider(thickness = 0.5.dp) // Divisor mais sutil
+        Divider(thickness = 0.5.dp)
         Spacer(modifier = Modifier.height(24.dp))
-
-        // Seção de Ingredientes
         SectionTitle(title = "Ingredientes")
         receita.ingredientes.forEach { ingrediente ->
             Text(
@@ -163,11 +170,12 @@ private fun DetalhesDaReceita(receita: Receita) {
     }
 }
 
+// Os composables SectionTitle e InfoItem não precisam de alterações
 @Composable
 private fun SectionTitle(title: String) {
     Text(
         text = title,
-        style = MaterialTheme.typography.titleLarge, // Um pouco maior para mais destaque
+        style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.SemiBold,
         modifier = Modifier.padding(bottom = 12.dp)
     )
@@ -183,9 +191,15 @@ private fun InfoItem(icon: androidx.compose.ui.graphics.vector.ImageVector, labe
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBarPadrao(titulo: String, navController: NavController, onDelete: () -> Unit) {
+private fun TopBarPadrao(
+    titulo: String,
+    navController: NavController,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit // <-- 3. PARÂMETRO onEdit ADICIONADO
+) {
     TopAppBar(
         title = { Text(titulo, color = Color.White) },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Purple40),
@@ -199,6 +213,14 @@ private fun TopBarPadrao(titulo: String, navController: NavController, onDelete:
             }
         },
         actions = {
+            // 4. BOTÃO DE EDITAR ADICIONADO
+            IconButton(onClick = onEdit) {
+                Icon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = "Editar Receita",
+                    tint = Color.White
+                )
+            }
             // Ícone de deletar na barra de ações
             IconButton(onClick = onDelete) {
                 Icon(

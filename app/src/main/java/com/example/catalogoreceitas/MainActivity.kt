@@ -2,24 +2,26 @@ package com.example.catalogoreceitas
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import androidx.activity.compose.setContent // You only need this one
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.catalogoreceitas.ui.theme.CatalogoReceitasTheme // Importe o nome do seu Tema
-import com.example.catalogoreceitas.View.AddReceitaScreen // Sua tela de Adicionar/Editar
-import com.example.catalogoreceitas.View.DescricaoReceitaScreen // Sua tela de Detalhes
-import com.example.catalogoreceitas.View.ListaReceitasScreen // Sua tela de Lista
+import com.example.catalogoreceitas.ui.theme.CatalogoReceitasTheme
+import com.example.catalogoreceitas.View.AddReceitaScreen
+import com.example.catalogoreceitas.View.DescricaoReceitaScreen
+import com.example.catalogoreceitas.View.ListaReceitasScreen
+
+// ... rest of your MainActivity class
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            CatalogoReceitasTheme { // Mantenha o nome do seu tema
+            CatalogoReceitasTheme {
                 val navController = rememberNavController()
 
                 NavHost(
@@ -33,30 +35,45 @@ class MainActivity : ComponentActivity() {
                         ListaReceitasScreen(navController)
                     }
 
-                    // 2. Rota para Adicionar/Editar Receita (Descrição)
-                    // Usamos o nome de arquivo que você indicou: AddReceita
+                    // 2. Rota ÚNICA para Adicionar e Editar Receita
+                    // Esta rota lida com os dois casos:
+                    // - Navegar para "AddReceita" -> Adicionar nova receita (receitaNome será null)
+                    // - Navegar para "AddReceita?receitaNome=Bolo" -> Editar receita "Bolo"
                     composable(
-                        route = "AddReceita"
-                    ) {
-                        AddReceitaScreen(navController)
+                        route = "AddReceita?receitaNome={receitaNome}",
+                        arguments = listOf(
+                            navArgument("receitaNome") {
+                                type = NavType.StringType
+                                nullable = true // Permite que o argumento seja nulo
+                                defaultValue = null // Define o valor padrão como nulo
+                            }
+                        )
+                    ) { backStackEntry ->
+                        // Extrai o argumento (será null se estiver adicionando)
+                        val nomeDaReceitaParaEditar = backStackEntry.arguments?.getString("receitaNome")
+
+                        // Chama a tela de Adicionar/Editar, passando o nome (ou null)
+                        // Lembre-se de atualizar a assinatura da função AddReceitaScreen para aceitar este segundo parâmetro
+                        AddReceitaScreen(navController, nomeDaReceitaParaEditar)
                     }
 
-                    // 3. Rota para Detalhes da Receita (DescricaoReceita)
-                    // Esta rota deve receber o nome da receita como argumento na URL
+                    // 3. Rota para Detalhes da Receita
+                    // Esta rota deve receber o nome da receita como argumento obrigatório
                     composable(
-                        // Define a rota com o parâmetro dinâmico {receitaNome}
                         route = "DescricaoReceita/{receitaNome}",
                         arguments = listOf(
                             navArgument("receitaNome") {
                                 type = NavType.StringType
-                                nullable = true // Permite que seja nulo, por segurança
+                                // Não precisa ser 'nullable' aqui, pois a tela de detalhes sempre espera um nome
                             }
                         )
                     ) { backStackEntry ->
                         // Extrai o argumento 'receitaNome'
-                        val nome = backStackEntry.arguments?.getString("receitaNome")
+                        val nomeDaReceita = backStackEntry.arguments?.getString("receitaNome")
+
                         // Chama a tela de detalhes, passando o argumento
-                        DescricaoReceitaScreen(navController, nome ?: "")
+                        // Adicionado um check de segurança, embora o argumento seja obrigatório
+                        DescricaoReceitaScreen(navController, nomeDaReceita)
                     }
                 }
             }
