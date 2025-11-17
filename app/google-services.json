@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "524483643942",
+    "project_id": "gusprojeto",
+    "storage_bucket": "gusprojeto.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524483643942:android:79584ef1eadc4b9c04f4e7",
+        "android_client_info": {
+          "package_name": "com.example.catalogoreceitas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmwnlzQpkRvOnmVh3jqjLirgmI-Uxi89U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
