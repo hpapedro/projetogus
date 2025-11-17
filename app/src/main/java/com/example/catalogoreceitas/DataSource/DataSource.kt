@@ -92,4 +92,25 @@ class DataSource {
 
         awaitClose { listener.remove() }
     }
+
+    // ... (dentro da classe DataSource)
+
+    // Função para excluir um documento no Firestore com base no nome da receita
+    fun excluirReceita(nomeReceita: String) {
+        // Busca o documento cujo campo 'nome' corresponde ao nome da receita
+        db.collection("receitas")
+            .whereEqualTo("nome", nomeReceita)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // Se encontrar, percorre os resultados (geralmente será apenas um)
+                for (document in querySnapshot.documents) {
+                    // Deleta o documento encontrado
+                    db.collection("receitas").document(document.id).delete()
+                }
+            }
+            .addOnFailureListener {
+                // Opcional: Lidar com falhas na exclusão
+            }
+    }
+
 }

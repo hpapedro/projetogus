@@ -4,39 +4,38 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.catalogoreceitas.ui.theme.Purple40 // Cores do tema
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.collectAsState
-import com.example.catalogoreceitas.ItemReceita.ItemReceita // Seu novo componente de item
-import com.example.catalogoreceitas.Repository.ReceitasRepository // Seu repositório de Receitas
+import com.example.catalogoreceitas.ItemReceita.ItemReceita
+import com.example.catalogoreceitas.Repository.ReceitasRepository
+import com.example.catalogoreceitas.ui.theme.Purple40
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ListaReceitasScreen( // Nome da função alterado
+fun ListaReceitasScreen(
     navController: NavController
 ) {
-
-    // Usa o repositório de Receitas
-    val receitasRepository = ReceitasRepository()
+    // Inicializa o repositório uma única vez usando remember
+    val receitasRepository = remember { ReceitasRepository() }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "Catálogo de Receitas", // Título alterado
+                        "Catálogo de Receitas",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -47,12 +46,10 @@ fun ListaReceitasScreen( // Nome da função alterado
                 )
             )
         },
-        // Fundo em Cinza Claro (0xFFF0F0F0), diferente do preto do projeto base
         containerColor = Color(0xFFF0F0F0),
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    // Navega para a rota de Adicionar Receita
                     navController.navigate("AddReceita")
                 },
                 containerColor = Purple40
@@ -64,30 +61,28 @@ fun ListaReceitasScreen( // Nome da função alterado
                 )
             }
         }
-    ) { paddingValues -> // Usamos paddingValues para respeitar o TopAppBar
+    ) { paddingValues ->
 
-        // Coleta o Flow de receitas do repositório
-        // O valor inicial é uma MutableList vazia
+        // Coleta o Flow de receitas do repositório de forma reativa
         val listaReceitas = receitasRepository.listarReceitas().collectAsState(mutableListOf()).value
 
-        LazyColumn (
-            // Aplica o padding do Scaffold
+        LazyColumn(
             modifier = Modifier.padding(paddingValues)
         ) {
-            // Usa a iteração moderna do Compose, que passa o objeto Receita
-            items(listaReceitas){ receita ->
+            items(listaReceitas, key = { it.nome }) { receita -> // Usar uma chave única ajuda o Compose
                 ItemReceita(
-                    receita = receita, // Passa a receita
+                    receita = receita,
                     onNavigateToDetails = {
-                        // **CORREÇÃO APLICADA AQUI**
-                        // Codifica o nome da receita para ser seguro para a URL
                         val encodedNome = URLEncoder.encode(receita.nome, StandardCharsets.UTF_8.toString())
-                        // Navega para a tela de Detalhes (DescricaoReceita), passando o nome da receita como argumento
                         navController.navigate("DescricaoReceita/$encodedNome")
+                    },
+                    // --- AÇÃO DE EXCLUSÃO ADICIONADA AQUI ---
+                    // Passa a função que será chamada quando o botão de deletar for clicado
+                    onDelete = {
+                        receitasRepository.excluirReceita(receita.nome)
                     }
                 )
             }
         }
-
     }
 }

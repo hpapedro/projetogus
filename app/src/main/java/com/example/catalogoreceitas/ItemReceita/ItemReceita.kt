@@ -1,125 +1,136 @@
 package com.example.catalogoreceitas.ItemReceita
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.Delete // Importa o ícone de lixeira
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.catalogoreceitas.Model.Receita
-import com.example.catalogoreceitas.ui.theme.RB_Green // Assumindo que você usa as cores do projeto base
-import com.example.catalogoreceitas.ui.theme.RB_Red
-import com.example.catalogoreceitas.ui.theme.RB_Yellow
-import com.example.catalogoreceitas.ui.theme.White
+import com.example.catalogoreceitas.ui.theme.Purple40
+import com.example.catalogoreceitas.ui.theme.Purple80
 
 @Composable
 fun ItemReceita(
     receita: Receita,
-    onNavigateToDetails: () -> Unit // Lambda para navegar ao tocar no ícone
+    onNavigateToDetails: () -> Unit,
+    onDelete: () -> Unit // <-- ADICIONE ESTE PARÂMETRO AQUI
 ) {
-    // Obtém os dados da receita
-    val nomeReceita = receita.nome
-    val tempoPreparo = receita.tempoPreparo
-
-    // Nova lógica de status baseada no TEMPO DE PREPARO
-    val statusPreparo: String
-    val corStatus: Color
-
-    when {
-        tempoPreparo <= 20 -> { // Curto: até 20 minutos
-            statusPreparo = "Curto"
-            corStatus = RB_Green
-        }
-        tempoPreparo <= 60 -> { // Médio: de 21 a 60 minutos
-            statusPreparo = "Médio"
-            corStatus = RB_Yellow
-        }
-        else -> { // Longo: mais de 60 minutos
-            statusPreparo = "Longo"
-            corStatus = RB_Red
-        }
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp, 8.dp), // Padding ajustado
-        colors = CardDefaults.cardColors(White),
-        elevation = CardDefaults.cardElevation(2.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Nome da receita
-            Text(
-                nomeReceita,
-                fontWeight = FontWeight.ExtraBold, // Peso da fonte alterado
-                color = Color.Black
-            )
-
-            // Tipo da receita (demonstra a Herança)
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween, // Espaçamento entre elementos
+        Column {
+            // 1. Cabeçalho Colorido com Título e Botão de Excluir
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 10.dp)
-            ) {
-                // Informação do tempo de preparo
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "Tempo de Preparo:",
-                        modifier = Modifier.padding(end = 8.dp)
+                    .height(80.dp)
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(Purple80, Purple40)
+                        )
                     )
-
-                    // Cartão de Status
-                    Card(
-                        colors = CardDefaults.cardColors(corStatus)
-                    ) {
-                        Box(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                statusPreparo,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-
-                    // Exibe o tempo exato (opcional)
+            ) {
+                // Conteúdo clicável que leva aos detalhes
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { onNavigateToDetails() } // Clique na área do título
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        " (${tempoPreparo} min)",
-                        modifier = Modifier.padding(start = 4.dp)
+                        text = receita.nome,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        maxLines = 2,
+                        modifier = Modifier.weight(1f) // Garante que o texto não empurre o botão
                     )
                 }
 
-                // Ícone para navegar para os detalhes
-                IconButton(
-                    onClick = onNavigateToDetails, // Usa o lambda passado
+                // Botão de excluir alinhado à direita
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.CenterEnd
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowForward,
-                        contentDescription = "Ver detalhes da receita.",
-                        tint = Color.Gray,
+                    IconButton(onClick = onDelete) { // Usa a função onDelete recebida
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = "Excluir Receita",
+                            tint = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                }
+            }
+
+            // 2. Corpo do Card (também clicável)
+            Column(
+                modifier = Modifier
+                    .clickable { onNavigateToDetails() }
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = receita.descricao,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    lineHeight = 20.sp
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 3. Informações de Tempo e Tipo
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    InfoComIcone(
+                        icone = Icons.Outlined.AccessTime,
+                        texto = "${receita.tempoPreparo} min"
+                    )
+                    InfoComIcone(
+                        icone = Icons.Filled.Tune,
+                        texto = receita.tipoClasse
                     )
                 }
             }
         }
+    }
+}
+
+// Composable auxiliar (permanece o mesmo)
+@Composable
+private fun InfoComIcone(icone: androidx.compose.ui.graphics.vector.ImageVector, texto: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icone,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = texto,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }

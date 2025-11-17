@@ -31,4 +31,13 @@ class ReceitasRepository() {
     fun buscarReceitaPorNome(nome: String): Flow<Receita?> {
         return dataSource.buscarReceitaPorNome(nome)
     }
+    // ... (dentro da classe ReceitasRepository)
+
+    // Função para excluir uma receita pelo nome
+    fun excluirReceita(nomeReceita: String) {
+        dataSource.excluirReceita(nomeReceita)
+    }
+
+
+
 }
